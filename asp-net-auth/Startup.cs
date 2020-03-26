@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Database;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,11 +37,37 @@ namespace asp_net_auth
                 options.UseSqlServer(databaseConnectionString);
             });
 
-            services.AddIdentity<IdentityUser, IdentityRole>()
-                .AddEntityFrameworkStores<DataContext>()
-                .AddDefaultTokenProviders();
+            services.AddIdentity<IdentityUser, IdentityRole>(options =>
+            {
+                options.User.RequireUniqueEmail = true;
+            })
+            .AddEntityFrameworkStores<DataContext>()
+            .AddDefaultTokenProviders();
 
-            services.AddControllers();
+            // cookie scheme setup that efcore identity can use - is different to normal cookie scheme
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.Cookie.HttpOnly = true;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                options.Cookie.SameSite = SameSiteMode.Lax;
+                options.Cookie.Name = "MyCookie";
+            });
+
+            // normal authentication using cookie scheme
+            //services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            //  .AddCookie(options =>
+            //  {
+            //      options.Cookie.HttpOnly = true;
+            //      options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            //      options.Cookie.SameSite = SameSiteMode.Lax;
+            //      options.Cookie.Name = "MyCookie";
+            //  });
+
+            // allow controllers / actions to opt out of authorization instead of opt in
+            services.AddControllers(options =>
+            {
+                options.Filters.Add(new AuthorizeFilter());
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -52,6 +81,8 @@ namespace asp_net_auth
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 

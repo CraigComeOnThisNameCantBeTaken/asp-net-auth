@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using asp_net_auth.Authorization;
 using asp_net_auth.Authorization.Requirements;
 using Database;
+using Database.Entities;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -39,12 +41,13 @@ namespace asp_net_auth
                 options.UseSqlServer(databaseConnectionString);
             });
 
-            services.AddIdentity<IdentityUser, IdentityRole>(options =>
+            services.AddIdentity<IdentityUser, Role>(options =>
             {
                 options.User.RequireUniqueEmail = true;
             })
             .AddEntityFrameworkStores<DataContext>()
-            .AddDefaultTokenProviders();
+            .AddDefaultTokenProviders()
+            .AddClaimsPrincipalFactory<CustomClaimPrincipleFactory>(); ;
 
             // cookie scheme setup that efcore identity can use - is different to normal cookie scheme
             services.ConfigureApplicationCookie(options =>
@@ -70,7 +73,8 @@ namespace asp_net_auth
                 };
             });
 
-            services.AddAuthorizationHandlers();
+            services.AddPermissionAuthorization();
+            services.AddSingleton<IAuthorizationPolicyProvider, PolicyProvider>();
             // there is a default role authorisation approach by we can register an example to show checking for a specific
             // role via a policy - just for learning, not production code
             services.AddAuthorization(options =>

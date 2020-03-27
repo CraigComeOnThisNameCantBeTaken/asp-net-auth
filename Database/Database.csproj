@@ -8,6 +8,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\20200327142402_Permissions.cs" />
+    <Compile Remove="Migrations\20200327142402_Permissions.Designer.cs" />
+    <Compile Remove="Migrations\20200327143213_Permissions.cs" />
+    <Compile Remove="Migrations\20200327143213_Permissions.Designer.cs" />
+    <Compile Remove="Migrations\20200327143545_Permissions.cs" />
+    <Compile Remove="Migrations\20200327143545_Permissions.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.1.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.2">

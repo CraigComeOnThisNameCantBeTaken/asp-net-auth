@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using asp_net_auth.Authorization;
+using asp_net_auth.Authorization.Requirements;
 using Database;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
@@ -51,6 +53,30 @@ namespace asp_net_auth
                 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                 options.Cookie.SameSite = SameSiteMode.Lax;
                 options.Cookie.Name = "MyCookie";
+                options.ExpireTimeSpan = TimeSpan.FromHours(1);
+
+                // by default the challenge will redirect to a login page
+                // but this application does not have views so we will just return a 401
+                options.Events.OnRedirectToLogin = (context) =>
+                {
+                    context.Response.StatusCode = 401;
+                    return Task.CompletedTask;
+                };
+
+                options.Events.OnRedirectToAccessDenied = (context) =>
+                {
+                    context.Response.StatusCode = 403;
+                    return Task.CompletedTask;
+                };
+            });
+
+            services.AddAuthorizationHandlers();
+            // there is a default role authorisation approach by we can register an example to show checking for a specific
+            // role via a policy - just for learning, not production code
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("adminLevel", policy =>
+                    policy.Requirements.Add(new AdminRequirement()));
             });
 
             // normal authentication using cookie scheme

@@ -16,13 +16,16 @@ namespace asp_net_auth.Controllers
     {
         private readonly UserManager<IdentityUser> userManager;
         private readonly SignInManager<IdentityUser> signInManager;
+        private readonly RoleManager<IdentityRole> roleManager;
 
         public AccountController(
             UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager)
+            SignInManager<IdentityUser> signInManager,
+            RoleManager<IdentityRole> roleManager)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
+            this.roleManager = roleManager;
         }
 
         [AllowAnonymous]
@@ -65,9 +68,39 @@ namespace asp_net_auth.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
-            var user = User;
             await signInManager.SignOutAsync();
             return Ok();
         }
+
+        [HttpPost("seedRoles")]
+        public async Task<IActionResult> SeedRoles()
+        {
+            await roleManager.CreateAsync(new IdentityRole("adminLevel"));
+            return Ok();
+        }
+
+        [HttpPost("addRolesToUser")]
+        public async Task<IActionResult> AddRoles()
+        {
+            var user = await userManager.GetUserAsync(User);
+            await userManager.AddToRoleAsync(user, "adminLevel");
+            return Ok();
+        }
+
+        [HttpGet("secure_role")]
+        [Authorize(Roles = "adminLevel")]
+        public async Task<IActionResult> SecureRoles()
+        {
+            return Ok();
+        }
+
+        // just to show how the default role based authorization would be working
+        [HttpGet("secure_policy")]
+        [Authorize(Policy = "adminLevel")]
+        public async Task<IActionResult> SecurePolicy()
+        {
+            return Ok();
+        }
+
     }
 }

@@ -28,17 +28,15 @@ namespace asp_net_auth.Authorization
         // at runtime
         public override Task<AuthorizationPolicy> GetPolicyAsync(string policyName)
         {
-            var policyNameSegments = policyName.Split(".");
-            if (PermissionTypes.List.Any(t => t == policyNameSegments[0]))
+            if(policyName.StartsWith("Permission."))
             {
-                var permissionName = policyNameSegments[0];
-                var permissionValue = policyNameSegments.Length > 1 ? policyNameSegments[1] : null;
+                var permissionName = policyName.Split(".")[1];
 
                 var permissionRequirements = permissionRequirementResolver
                     .Resolve(permissionName)
                     .ToList();
-                permissionRequirements.Add(new HasPermissionRequirement(permissionName, permissionValue));
-                
+                permissionRequirements.Add(new HasPermissionRequirement(permissionName));
+
                 var policy = new AuthorizationPolicyBuilder()
                     .AddRequirements(permissionRequirements.ToArray())
                     .Build();

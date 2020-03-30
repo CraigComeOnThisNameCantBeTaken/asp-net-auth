@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using asp_net_auth.Authorization.Requirements.Permissions;
 
 namespace asp_net_auth.Controllers
 {
@@ -130,7 +131,7 @@ namespace asp_net_auth.Controllers
 
         // policy just enforces the user has this permission
         [HttpGet("secure_permission_policy")]
-        [Authorize(Policy = PermissionTypes.EditData)]
+        [Authorize(Policy = "adminLevel")]
         public async Task<IActionResult> SecureEditDataPolicy()
         {
             return Ok();
@@ -139,7 +140,7 @@ namespace asp_net_auth.Controllers
 
         // policy enforces the user has this permission AND that 3 is greater than some random number
         [HttpGet("secure_permission_policy_with_extra_handler")]
-        [Authorize(Policy = PermissionTypes.ShareData)]
+        [RequiresPermission(PermissionTypes.ShareData)]
         public async Task<IActionResult> SecureShareDataPolicy()
         {
             return Ok();

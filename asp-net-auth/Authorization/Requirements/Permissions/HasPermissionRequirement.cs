@@ -3,19 +3,17 @@ using Microsoft.AspNetCore.Authorization.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace asp_net_auth.Authorization.Requirements.Permissions
 {
     public class HasPermissionRequirement : OperationAuthorizationRequirement
     {
-        public HasPermissionRequirement(string name, string value)
+        public HasPermissionRequirement(string name)
         {
             Name = name;
-            Value = value;
         }
-
-        public string Value { get; }
     }
 
     public class HasPermissionRequirementHandler : AuthorizationHandler<HasPermissionRequirement>
@@ -24,15 +22,13 @@ namespace asp_net_auth.Authorization.Requirements.Permissions
             AuthorizationHandlerContext context,
             HasPermissionRequirement requirement)
         {
-            var claim = context.User.Claims.FirstOrDefault(c => c.Type == requirement.Name);
+            var claim = context.User.Claims.FirstOrDefault(c => c.Type == "Permission");
 
-            if (claim == null ||
-                !string.IsNullOrEmpty(requirement.Value) && claim.Value != requirement.Value)
+            if (claim != null)
             {
-                return Task.CompletedTask;
+                context.Succeed(requirement);
             }
 
-            context.Succeed(requirement);
             return Task.CompletedTask;
         }
     }

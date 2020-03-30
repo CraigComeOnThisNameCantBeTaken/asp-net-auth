@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using asp_net_auth.Authorization.Requirements.Permissions;
+using asp_net_auth.Authorization.Attributes;
 
 namespace asp_net_auth.Controllers
 {
@@ -121,6 +122,13 @@ namespace asp_net_auth.Controllers
             return Ok();
         }
 
+
+
+
+
+
+
+
         // just to show how the default role based authorization would be working
         [HttpGet("secure_policy")]
         [Authorize(Policy = "adminLevel")]
@@ -138,13 +146,38 @@ namespace asp_net_auth.Controllers
         }
 
 
+
+
+
+
+
+
+
+
+
         // policy enforces the user has this permission AND that 3 is greater than some random number
         [HttpGet("secure_permission_policy_with_extra_handler")]
         [RequiresPermission(PermissionTypes.ShareData)]
+        [Authorize()]
         public async Task<IActionResult> SecureShareDataPolicy()
         {
+            IAuthorizationService authService = null;
+
+            object dataTobeShared = null;
+            authService.AuthorizeAsync(User, dataTobeShared, PermissionTypes.ShareData);
+
+
+
             return Ok();
         }
+
+
+
+
+
+
+
+
 
         // policy enforces the user has this permission AND that 3 is greater than some random number
         [HttpGet("secure_permission_policy_with_extra_handler_with_resource")]

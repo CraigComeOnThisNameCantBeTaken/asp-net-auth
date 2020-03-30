@@ -28,15 +28,20 @@ namespace asp_net_auth.Authorization
         // at runtime
         public override Task<AuthorizationPolicy> GetPolicyAsync(string policyName)
         {
-            if(policyName.StartsWith("Permission."))
+            // instead of Permission.name as a delimiter for string.StartsWith() check
+            // we are just using a permission name and checking against a list
+            // of all available permissions.
+            // this is because using the autorization service requires a policy and
+            // we dont want consumers to have to know to string concatenate Permission.{permissionName}
+            if (PermissionTypes.List.Any(t => t == policyName))
             {
-                var permissionName = policyName.Split(".")[1];
+                var permissionName = policyName;
 
                 var permissionRequirements = permissionRequirementResolver
                     .Resolve(permissionName)
                     .ToList();
                 permissionRequirements.Add(new HasPermissionRequirement(permissionName));
-
+                
                 var policy = new AuthorizationPolicyBuilder()
                     .AddRequirements(permissionRequirements.ToArray())
                     .Build();
